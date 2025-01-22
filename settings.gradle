@@ -1,0 +1,6 @@
+rootProject.name = 'cosmos-core'
+
+include 'cosmoscore-common'
+include 'cosmoscore-position'
+include 'cosmoscore-orbit'
+include 'cosmoscore-observer'
