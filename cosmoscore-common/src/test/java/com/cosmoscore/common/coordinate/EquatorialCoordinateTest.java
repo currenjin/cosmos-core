@@ -71,9 +71,80 @@ class EquatorialCoordinateTest {
 		void formatAsString() {
 			EquatorialCoordinate coordinate = new EquatorialCoordinate(123.45, 67.89);
 
-			String formatted = coordinate.toString();
+			String actual = coordinate.toString();
 
-			assertThat(formatted).contains("123.45").contains("67.89");
+			assertThat(actual).contains("123.45").contains("67.89");
+		}
+	}
+
+	@Nested
+	@DisplayName("time unit conversions")
+	class TimeUnitConversions {
+		@Test
+		@DisplayName("converts right ascension to hours, minutes, and seconds")
+		void convertRightAscensionToHMS() {
+			EquatorialCoordinate coordinate = new EquatorialCoordinate(152.75, 0);
+
+			int hours = coordinate.rightAscensionHourPart();
+			int minutes = coordinate.rightAscensionMinutePart();
+			double seconds = coordinate.rightAscensionSecondPart();
+
+			assertThat(hours).isEqualTo(10);
+			assertThat(minutes).isEqualTo(11);
+			assertThat(seconds).isEqualTo(0.0, withPrecision(PRECISION));
+		}
+
+		@Test
+		@DisplayName("converts declination to degrees, arcminutes, and arcseconds")
+		void convertDeclinationToDMS() {
+			EquatorialCoordinate coordinate = new EquatorialCoordinate(0, 42.5);
+
+			int degrees = coordinate.declinationDegreePart();
+			int arcminutes = coordinate.declinationArcminutePart();
+			double arcseconds = coordinate.declinationArcsecondPart();
+
+			assertThat(degrees).isEqualTo(42);
+			assertThat(arcminutes).isEqualTo(30);
+			assertThat(arcseconds).isEqualTo(0.0, withPrecision(PRECISION));
+		}
+	}
+
+	@Nested
+	@DisplayName("angle calculations")
+	class AngleCalculations {
+		@Test
+		@DisplayName("calculates angular separation between two coordinates")
+		void calculateAngularSeparation() {
+			EquatorialCoordinate coord1 = new EquatorialCoordinate(0, 0);
+			EquatorialCoordinate coord2 = new EquatorialCoordinate(0, 90);
+
+			double separation = coord1.angularSeparation(coord2);
+
+			assertThat(separation).isEqualTo(90.0, withPrecision(PRECISION));
+		}
+	}
+
+	@Nested
+	@DisplayName("formatting")
+	class Formatting {
+		@Test
+		@DisplayName("formats right ascension in HMS format")
+		void formatRightAscensionHMS() {
+			EquatorialCoordinate coordinate = new EquatorialCoordinate(152.75, 0);
+
+			String actual = coordinate.formatRightAscension();
+
+			assertThat(actual).isEqualTo("10h 11m 00.00s");
+		}
+
+		@Test
+		@DisplayName("formats declination in DMS format")
+		void formatDeclinationDMS() {
+			EquatorialCoordinate coordinate = new EquatorialCoordinate(0, 42.5);
+
+			String actual = coordinate.formatDeclination();
+
+			assertThat(actual).isEqualTo("+42° 30' 00.00\"");
 		}
 	}
 }
