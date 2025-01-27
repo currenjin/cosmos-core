@@ -40,7 +40,6 @@ public record Observer(double latitude, double longitude) {
 		double lst = LocalSiderealTime.calculate(jd, longitude);
 
 		double ha = (lst * 15.0) - equatorial.rightAscension();
-		if (ha < 0) ha += 360.0;
 
 		double haRad = Math.toRadians(ha);
 		double latRad = Math.toRadians(latitude);
@@ -50,9 +49,9 @@ public record Observer(double latitude, double longitude) {
 			Math.cos(decRad) * Math.cos(latRad) * Math.cos(haRad);
 		double altitude = Math.toDegrees(Math.asin(sinAlt));
 
-		double cosAz = (Math.sin(decRad) - sinAlt * Math.sin(latRad)) /
-			(Math.cos(Math.asin(sinAlt)) * Math.cos(latRad));
-		double sinAz = -Math.cos(decRad) * Math.sin(haRad) / Math.cos(Math.asin(sinAlt));
+		double sinAz = -Math.sin(haRad) * Math.cos(decRad) / Math.cos(Math.toRadians(altitude));
+		double cosAz = (Math.sin(decRad) - Math.sin(latRad) * sinAlt) /
+			(Math.cos(latRad) * Math.cos(Math.toRadians(altitude)));
 
 		double azimuth = Math.toDegrees(Math.atan2(sinAz, cosAz));
 		azimuth = (azimuth + 360.0) % 360.0;

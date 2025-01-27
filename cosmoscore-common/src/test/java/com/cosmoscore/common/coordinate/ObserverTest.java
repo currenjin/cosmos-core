@@ -2,6 +2,7 @@ package com.cosmoscore.common.coordinate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.offset;
 import static org.assertj.core.api.Assertions.withPrecision;
 
 import java.time.LocalDateTime;
@@ -50,20 +51,42 @@ class ObserverTest {
 		}
 	}
 
-	@Test
-	@DisplayName("converts equatorial to horizontal coordinates")
-	void convertEquatorialToHorizontal() {
-		Observer observer = new Observer(37.5665, 126.9780);
-		EquatorialCoordinate equatorial = new EquatorialCoordinate(37.95, 89.26);
-		LocalDateTime observationTime = LocalDateTime.of(2025, Month.JANUARY, 1, 12, 0)
-			.atZone(ZoneOffset.UTC)
-			.toLocalDateTime();
+	@Nested
+	@DisplayName("coordinate conversion")
+	class CoordinateConversion {
+		@Test
+		@DisplayName("converts equatorial to horizontal coordinate - Polaris")
+		void convertPolaris() {
+			Observer observer = new Observer(37.5665, 126.9780);
+			EquatorialCoordinate polaris = new EquatorialCoordinate(37.95, 89.26);
 
-		HorizontalCoordinate horizontal = observer.toHorizontal(equatorial, observationTime);
+			LocalDateTime observationTime = LocalDateTime.of(2025, 1, 1, 12, 0)
+				.atZone(ZoneOffset.UTC)
+				.toLocalDateTime();
 
-		double azimuth = horizontal.azimuth();
-		boolean isNearNorth = azimuth > 359 || azimuth < 1;
-		assertThat(isNearNorth).isTrue();
-		assertThat(horizontal.altitude()).isEqualTo(37.5, withPrecision(1.0));
+			HorizontalCoordinate horizontal = observer.toHorizontal(polaris, observationTime);
+
+			double azimuth = horizontal.azimuth();
+			boolean isNearNorth = Math.abs(azimuth) <= 1.0 || Math.abs(azimuth - 360.0) <= 1.0;
+			assertThat(isNearNorth).isTrue();
+
+			assertThat(horizontal.altitude()).isCloseTo(37.5665, offset(1.0));
+		}
+
+		@Test
+		@DisplayName("converts equatorial to horizontal coordinate - Celestial Equator")
+		void convertCelestialEquator() {
+			Observer observer = new Observer(37.5665, 126.9780);
+
+			LocalDateTime observationTime = LocalDateTime.of(2025, 1, 1, 4, 0)
+				.atZone(ZoneOffset.UTC)
+				.toLocalDateTime();
+
+			EquatorialCoordinate equatorial = new EquatorialCoordinate(180.0, 0.0);
+
+			HorizontalCoordinate horizontal = observer.toHorizontal(equatorial, observationTime);
+
+			assertThat(horizontal.altitude()).isCloseTo(-14.2108, offset(1.0));
+		}
 	}
 }
