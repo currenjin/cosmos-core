@@ -58,4 +58,29 @@ public record Observer(double latitude, double longitude) {
 
 		return new HorizontalCoordinate(azimuth, altitude);
 	}
+
+	public EquatorialCoordinate toEquatorial(HorizontalCoordinate horizontal, LocalDateTime observationTime) {
+		JulianDate jd = JulianDate.fromLocalDateTime(observationTime);
+		double lst = LocalSiderealTime.calculate(jd, longitude);
+
+		double azRad = Math.toRadians(horizontal.azimuth());
+		double altRad = Math.toRadians(horizontal.altitude());
+		double latRad = Math.toRadians(latitude);
+
+		double sinDec = Math.sin(altRad) * Math.sin(latRad) +
+			Math.cos(altRad) * Math.cos(latRad) * Math.cos(azRad);
+		double declination = Math.toDegrees(Math.asin(sinDec));
+
+		double cosH = (Math.sin(altRad) - Math.sin(latRad) * sinDec) /
+			(Math.cos(latRad) * Math.cos(Math.asin(sinDec)));
+		double sinH = -Math.sin(azRad) * Math.cos(altRad) / Math.cos(Math.asin(sinDec));
+		double ha = Math.toDegrees(Math.atan2(sinH, cosH));
+
+		double rightAscension = (lst * 15.0 - ha) % 360.0;
+		if (rightAscension < 0) {
+			rightAscension += 360.0;
+		}
+
+		return new EquatorialCoordinate(rightAscension, declination);
+	}
 }
