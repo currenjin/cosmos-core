@@ -88,5 +88,23 @@ class ObserverTest {
 
 			assertThat(horizontal.altitude()).isCloseTo(-14.2108, offset(1.0));
 		}
+
+		@Test
+		@DisplayName("converts horizontal to equatorial coordinates")
+		void convertToEquatorial() {
+			Observer observer = new Observer(37.5665, 126.9780);
+			LocalDateTime observationTime = LocalDateTime.of(2025, 1, 1, 12, 0)
+				.atZone(ZoneOffset.UTC)
+				.toLocalDateTime();
+
+			HorizontalCoordinate horizontal = new HorizontalCoordinate(180.0, 45.0);
+
+			EquatorialCoordinate equatorial = observer.toEquatorial(horizontal, observationTime);
+
+			HorizontalCoordinate reconverted = observer.toHorizontal(equatorial, observationTime);
+
+			assertThat(reconverted.azimuth()).isCloseTo(horizontal.azimuth(), offset(0.01));
+			assertThat(reconverted.altitude()).isCloseTo(horizontal.altitude(), offset(0.01));
+		}
 	}
 }
